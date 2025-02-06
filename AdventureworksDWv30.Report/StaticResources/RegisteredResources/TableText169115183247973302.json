@@ -1,0 +1,25 @@
+{
+  "name": "TableText16",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "*": [
+          {
+            "color": {
+              "solid": {}
+            }
+          }
+        ]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "grid": [
+          {
+            "textSize": 16
+          }
+        ]
+      }
+    }
+  }
+}

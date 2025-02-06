@@ -1,0 +1,37 @@
+DEFINE
+    VAR _tables = 
+        SELECTCOLUMNS(
+            FILTER(
+                INFO.TABLES(),
+                [IsHidden] = FALSE()
+            ),
+            "TableID", [ID],
+            "TableName", [Name]
+        )
+    
+    VAR _columns = 
+        FILTER(
+            INFO.COLUMNS(),
+            [Type] <> 3
+        )
+    
+    VAR _result = 
+        SELECTCOLUMNS(
+            NATURALINNERJOIN(_columns, _tables),
+            "Table", [TableName],
+            "Column", [ExplicitName],
+            "Description", [Description],
+            "DataSourceColumn", [SourceColumn],
+            "DataCategory", [DataCategory],
+            "ColumnType", 
+                SWITCH(
+                    [Type],
+                    1, "Data column",
+                    2, "Calculated column",
+                    [Type]
+                ),
+            "Formula", [Expression]
+        )
+
+EVALUATE
+_result

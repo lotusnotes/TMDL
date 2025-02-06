@@ -1,0 +1,20 @@
+// ** can always be added as a calculated table (joined to the model) for use with other DAX calcs or measures.
+// Behaving just like a view in SQL
+EVALUATE
+FILTER(
+    SUMMARIZECOLUMNS(
+    Geography[EnglishCountryRegionName],
+	'ProductCategory 😀'[productcategoryname],
+    Product[ProductName],
+    KEEPFILTERS( TREATAS( {"Red","Black","Blue"}, Product[Color] )),
+	KEEPFILTERS( TREATAS( {"Mountain Bikes","Touring Bikes"}, ProductSubcategory[ProductSubcategoryName] )),
+    "@Total Sales", [Total Sales]
+),
+[@Total Sales]>100000
+)
+ORDER BY 
+   [EnglishCountryRegionName],[Total Sales] desc
+   
+
+ //could be used in DetailedRows  
+  

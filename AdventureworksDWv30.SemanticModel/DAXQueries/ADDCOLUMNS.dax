@@ -1,0 +1,17 @@
+// ** can always be added as a calculated table  for use with other DAX calcs or measures.
+// Behaving just like a view in SQL
+
+EVALUATE
+FILTER(
+	ADDCOLUMNS(
+		FILTER(
+			ALL('Product'[ProductName],'Product'[Color]),
+			'Product'[Color] IN {"red","blue"}
+		),
+		"_Sales",[Total Sales]
+	),
+	[_Sales]>50000
+)
+ORDER BY [_Sales] DESC
+
+//could be used in DetailedRows 

@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "tabOrder": [
+    "meta data for measures",
+    "meta data for columns",
+    "Find errors",
+    "Dependencies1",
+    "Dependencies2",
+    "Dependencies3",
+    "SUMMARIZECOLUMNS",
+    "ADDCOLUMNS",
+    "top 3 per",
+    "TUPLES",
+    "DetailRows = global variables"
+  ],
+  "defaultTab": "TUPLES"
+}

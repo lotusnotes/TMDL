@@ -1,0 +1,99 @@
+//show all columns and relationships related to a chart
+
+//https://blog.crossjoin.co.uk/2024/10/20/finding-the-columns-touched-by-a-dax-query/
+
+//just replace the Source_Query with whatever... eg copy query from Performance Analyzer
+//and replace " with "" (just within Source_Query)
+
+// the rest of the script is fixed
+
+EVALUATE
+VAR Source_Query = // note ""
+"
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({""Accessories""}, 'ProductCategory_BUDGET_Left'[ProductCategoryName])
+
+	VAR __DS0FilterTable2 = 
+		FILTER(
+			KEEPFILTERS(VALUES('ProductCategory_BUDGET_Right'[ProductCategoryName])),
+			NOT('ProductCategory_BUDGET_Right'[ProductCategoryName] IN {""Components""})
+		)
+
+	VAR __DS0Core = 
+		SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL('ProductCategory2'[ProductCategoryName], ""IsGrandTotalRowTotal""),
+			__DS0FilterTable,
+			__DS0FilterTable2,
+			""Total_Sales"", 'All Measures 😀'[Total Sales],
+			""v_Total_Sales_FormatString"", IGNORE('All Measures 😀'[_Total Sales FormatString]),
+			""Total_Sales_BUDGET_Right"", 'ProductCategory_BUDGET_Right'[Total Sales BUDGET Right],
+			""v_Total_Sales_BUDGET_Right_FormatString"", IGNORE('ProductCategory_BUDGET_Right'[_Total Sales BUDGET Right FormatString]),
+			""Total_Sales_BUDGET_Left"", 'ProductCategory_BUDGET_Left'[Total Sales BUDGET Left],
+			""v_Total_Sales_BUDGET_Left_FormatString"", IGNORE('ProductCategory_BUDGET_Left'[_Total Sales BUDGET Left FormatString])
+		)
+
+	VAR __DS0PrimaryWindowed = 
+		TOPN(
+			502,
+			__DS0Core,
+			[IsGrandTotalRowTotal],
+			0,
+			[Total_Sales],
+			1,
+			'ProductCategory2'[ProductCategoryName],
+			1
+		)
+
+EVALUATE
+	__DS0PrimaryWindowed
+
+ORDER BY
+	[IsGrandTotalRowTotal] DESC, [Total_Sales], 'ProductCategory2'[ProductCategoryName]
+"
+VAR All_Dependencies =
+INFO.CALCDEPENDENCY(
+	"QUERY",
+	Source_Query
+)
+VAR Referenced_Cols = 
+SELECTCOLUMNS(
+	FILTER(
+		All_Dependencies, 
+		[REFERENCED_OBJECT_TYPE] IN {"COLUMN", "CALC_COLUMN"} 
+		),
+	"FullyQualifiedName",
+	"'" & [REFERENCED_TABLE] & "'[" & [REFERENCED_OBJECT] & "]"
+)
+VAR Referenced_Relationships =
+SELECTCOLUMNS(
+FILTER(
+	All_Dependencies, 
+	[REFERENCED_OBJECT_TYPE] IN {"ACTIVE_RELATIONSHIP", "RELATIONSHIP"} ),
+"Name",
+[REFERENCED_OBJECT])
+VAR Relationship_Details =
+FILTER(
+	INFO.VIEW.RELATIONSHIPS(),
+	[Name] IN Referenced_Relationships
+)
+VAR Relationship_Columns = 
+UNION(
+	SELECTCOLUMNS(
+		Relationship_Details,
+		"FullyQualifiedName",
+		"'" & [FromTable] & "'[" & [FromColumn] & "]"
+	),
+		SELECTCOLUMNS(
+		Relationship_Details,
+		"FullyQualifiedName",
+		"'" & [ToTable] & "'[" & [ToColumn] & "]"
+	)
+)
+VAR All_Referenced_Columns = 
+UNION(
+	Referenced_Cols,
+	Relationship_Columns
+)
+RETURN 
+All_Referenced_Columns

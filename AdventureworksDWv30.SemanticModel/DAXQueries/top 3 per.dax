@@ -1,0 +1,30 @@
+EVALUATE
+VAR SummaryTable = SUMMARIZECOLUMNS(
+    Geography[EnglishCountryRegionName],
+    'ProductCategory 😀'[productcategoryname],
+    'Product'[ProductName],
+    "Total Sales", [Total Sales]
+    
+)
+VAR Top3PerCategory = 
+    ADDCOLUMNS(
+        SummaryTable,
+        "Rank", RANKX(
+            FILTER(
+                SummaryTable,
+                [EnglishCountryRegionName] = EARLIER([EnglishCountryRegionName]) &&
+                [productcategoryname] = EARLIER([productcategoryname])
+            ),
+            [Total Sales], , DESC, Dense
+        )
+    )
+
+
+
+RETURN
+    FILTER(
+        Top3PerCategory,
+        [Rank] <= 3
+    )
+    ORDER BY 
+   [EnglishCountryRegionName],[productcategoryname],[rank]

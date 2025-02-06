@@ -1,0 +1,38 @@
+//new June 24
+
+EVALUATE
+INFO.CALCDEPENDENCY()
+
+//dependent when querying table
+EVALUATE
+INFO.CALCDEPENDENCY("query","evaluate 'Date 👍'")
+
+//dependent when querying  measure
+EVALUATE
+INFO.CALCDEPENDENCY("query","evaluate {[Total Sales PM]}")
+
+//find measures referencing a column
+EVALUATE
+SELECTCOLUMNS(
+	FILTER(
+		INFO.CALCDEPENDENCY(),
+		[OBJECT_TYPE] = "MEASURE" &&
+		[REFERENCED_OBJECT_TYPE] = "COLUMN" &&
+		[REFERENCED_OBJECT] = "SalesAmount" //column name
+	),
+	[OBJECT]
+)
+
+//find measures referencing a measure
+EVALUATE
+SELECTCOLUMNS(
+	FILTER(
+		INFO.CALCDEPENDENCY(),
+		[OBJECT_TYPE] = "MEASURE" &&
+		[REFERENCED_OBJECT_TYPE] = "MEASURE" &&
+		[REFERENCED_OBJECT] = "Total Sales" //measure name
+	),
+	[OBJECT]
+)
+
+

@@ -1,0 +1,117 @@
+// see https://www.sqlbi.com/articles/using-tuple-syntax-in-dax-expressions/
+
+EVALUATE
+CALCULATETABLE (
+    'Product',
+    'Product'[Color] IN { "Red", "Blue" }
+)
+
+EVALUATE
+CALCULATETABLE (
+    'Product',
+    ( 'Product'[Color], 'Product'[Class] )
+        IN { ( "Red", "H" ), ( "Blue", "M" ) }
+)
+order by 'Product'[ListPrice] desc
+
+EVALUATE
+SELECTCOLUMNS (
+    { //columns naturally called [Value1]....
+        ( 1, "LOW", 0, 100,"17/3/24" ),
+        ( 2, "MEDIUM", 100, 500,"19/5/24" ),
+        ( 3, "HIGH", 500, 9999999, today()-7 )
+    },
+    "PriceRangeKey", [Value1],
+    "Price Range", [Value2],
+    "Min", [Value3],
+    "Max", [Value4],
+	"Date", [Value5]
+)
+
+EVALUATE
+DATATABLE(
+	"col1",INTEGER,
+	"col2",STRING,
+	"col3",DATETIME,
+	{
+		{1,"Aaa","19/1/2024"},
+		{2,"Bbb","17/12/2024"}
+	}
+)
+
+EVALUATE
+VAR _MinValue = MIN ( 'InternetSales 😀'[SalesAmount] )
+VAR _MaxValue = MAX ( 'InternetSales 😀'[SalesAmount] )
+VAR _StDev = STDEV.P ( 'InternetSales 😀'[SalesAmount])
+VAR _Average = AVERAGE ( 'InternetSales 😀'[SalesAmount] )
+RETURN
+SELECTCOLUMNS (
+    {
+        ( 1, "LOW", _MinValue, _Average - 0.1 * _StDev ),
+        ( 2, "MEDIUM", _Average - 0.1 * _StDev, _Average + _StDev ),
+        ( 3, "HIGH", _Average + _StDev, _MaxValue )
+    },
+    "PriceRangeKey", [Value1],
+    "Price Range", [Value2],
+    "Min", [Value3],
+    "Max", [Value4]
+)
+
+EVALUATE {( 59, "Canada", dt"2024-07-22" )} //note date syntax
+
+///////// next 2 together
+DEFINE MEASURE
+'InternetSales 😀'[M1]= //table reference is required
+CALCULATE (
+    [Total Profit],
+    ( 'Date 👍'[EnglishMonthName],'Date 👍'[CalendarYear] ) IN { ( "December", 2006 ), ( "January", 2007 ) }
+)
+ EVALUATE
+ SUMMARIZECOLUMNS(
+	Customer[Gender],
+	"_Profit",[M1]
+ )
+ /////////
+ 
+ ////////same again (slighly more efficient)
+ DEFINE MEASURE
+'InternetSales 😀'[M2]= 
+CALCULATE (
+    [Total Profit],
+    TREATAS(
+		{ ( "December", 2006 ), ( "January", 2007 ) },
+		'Date 👍'[EnglishMonthName],'Date 👍'[CalendarYear]
+	)
+)
+
+ EVALUATE
+ SUMMARIZECOLUMNS(
+	Customer[Gender],
+	"_Profit",[M2]
+ )
+ //////////
+ 
+ ///////////
+ DEFINE MEASURE
+ 'InternetSales 😀'[Promo]= 
+IF (
+    NOT ISEMPTY (
+        INTERSECT ( //table constructor
+            {
+                ( "Red", "United States" ), //color,country
+                ( "Blue", "Canada" )
+            },
+            SUMMARIZE ( 'InternetSales 😀', 'Product'[Color], Geography[EnglishCountryRegionName])
+        )
+    ),
+    "Promo1",
+    "Promo2" //else
+)
+
+EVALUATE
+ SUMMARIZECOLUMNS(
+	Geography[EnglishCountryRegionName],
+	"_Promo",[Promo]
+ )
+ order BY [_Promo]
+ //////////////

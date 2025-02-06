@@ -1,0 +1,24 @@
+// like global variables and the nearest thing to views from SQL
+
+//see - https://www.antmanbi.com/post/using-detailrows-with-window-functions-in-dax
+
+//created in tabular editor
+
+EVALUATE
+INFO.DETAILROWSDEFINITIONS()
+
+EVALUATE
+DETAILROWS([Filter detail rows 2])
+
+EVALUATE
+DETAILROWS([Filter detail rows by date])
+
+EVALUATE
+	DETAILROWS([DetailRows metrics by Country MMMYYYY])
+
+EVALUATE // still works, despite the squiggles - requires 'order by' to make sense
+ADDCOLUMNS(
+	DETAILROWS([DetailRows metrics by Country MMMYYYY]),
+	"_YTD",[Profit YTD]
+)
+ORDER BY Geography[EnglishCountryRegionName],'Date 👍'[MMMYYYY sort]

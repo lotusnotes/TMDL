@@ -1,0 +1,6 @@
+// see - https://eriksvensen.wordpress.com/2024/03/06/powerbi-update-your-measures-without-the-formula-bar/
+
+EVALUATE
+	VAR _X =INFO.MEASURES()
+	RETURN
+		FILTER(_X, [ErrorMessage]<>"")
